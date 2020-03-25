@@ -1,42 +1,58 @@
-# Module 1 Final Project
+# Module 2 Final Project
 
-## The Project
+## The Goal
 
-Microsoft sees all the big companies creating original video content, and they want to get in on the fun. They have decided to create a new movie studio, but the problem is they don’t know anything about creating movies. They have hired you to help them better understand the movie industry.
-Your team is charged with doing data analysis and creating a presentation that explores what type of films are currently doing the best at the box office. You must then translate those findings into actionable insights that the CEO can use when deciding what type of films they should be creating.
+The goal of this project is to create a multiple linear regression model that accurately predicts house prices in King County, WA.
 
-# The Dataset
+# Notebook Setup
+For this project I used general python libraries, geomapping libraries, and statistical or regression libraries.
 
-For this project some movie-related data was provided from :
-* Box Office Mojo
-* IMDB
-* Rotten Tomatoes
-* TheMovieDB.org
+## General python libraries
+* import json
+* import matplotlib.pyplot as plt
+* import numpy as np
+* import pandas as pd
+* import pickle
+* import re
+
+## Geo mapping libraries
+* from branca.colormap import linear
+* import geopandas as gpd
+* from ipyleaflet import Map, GeoData, basemaps, LayersControl, Choropleth, Heatmap, FullScreenControl
+* from ipyleaflet import WidgetControl, GeoJSON 
+* from ipywidgets import Text, HTML
+* from shapely.geometry import Point, Polygon
+
+## Statistics and regression libraries
+* from scipy.stats import zscore
+* from sklearn.linear_model import LinearRegression
+* from sklearn.metrics import mean_squared_error
+* from sklearn.model_selection import cross_val_score
+* from sklearn.preprocessing import minmax_scale
+* import statsmodels.api as sm
+* import statsmodels.stats.api as sms
 
 # My Approach
-* Use `pandas` to initially ingest the datasets
-* Explore foreign key relationships between datasets to join tables
-* Use `pandasql.sqldf` to use SQL to join dataframes
-* Use `pandas` to clean columns, convert incorrect column types, add new calculated columns
-* Use `seaborn` to visualize data
+* Use pandas to initially ingest the datasets and clean them, fill missing values, correct data types, convert certain columns to binary, remove outliers, bin and one-hot encode columns
+* Use Sklearn to create baseline model at this point (.954 R-squared)
+* Then use numpy to log-transform features
+* Min-max scale features using Sklearn
+* Remove features that weren't statistically significant
+* Rerun model after changes (.949 R-squared)
+* Validate model with k-fold cross validation (10 folds, using negative mean squared error with result of -17.06e9)
+* Pickle the model for portability
 
-# Questions answered
+# After creating model, investigate zipcode feature and try new approach
+A property's location, encoded by zipcode, is the most important feature in the dataset but zipcodes are of an arbitrary shape, the government changes them and they are also too big for more detailed location-based analysis.
 
-## How many films are actually profitable?
-![graph_1](img/graph_1.png)
+See how various the zipcodes' sizes and shapes are:
+![img1](img/zipcodes_map.png)
 
-The vast majority of films in our dataset were profitable. We can reasonably expect to make money in this new venture assuming our firm performs as well as the average firm. The mean profit margin for films was 39%.
+## Create new feature called a "geobin"
+Because zipcodes are so unreliable, I split the data into many smaller "geobins". These polygons are based on latitude and longitude, are much smaller than the zipcode data that was provided and will allow us to differentiate between different locations' affect on price more accurately. 
 
-## Which directors have the most profitable films?
-![graph_2](img/graph_2.png)
+![img2](img/geobins_map.png)
 
-The top 3 directors by average total_profit are Adam Green, Kyle Balda, and Joss Whedon.
 
-## When is the best time of year to release a movie?
-![graph_3](img/graph_3.png)
-
-According to the graph the best time to release a movie with regard to gross margin would be in the months of July, January, or November. One caveat: the difference between high gross margin months and low is so miniscule that release_month may not be a statistically significant variable. Other variables like, the quality of the film, the popularity of the cast and directors will probably affect the gross margins much more.
-
-# Initial Recommendations:
-* Hire Adam Green, Kyle Balda, or Joss Whedon because of their history of profitable films.
-* Plan the production schedule for a release in the summer, preferably in July.
+# Conclusion
+Our final geobins-based model had the same r-squared as the original zipcode model but also has the advantage of using a location feature that is standardized, scalable, and not arbitrary.
